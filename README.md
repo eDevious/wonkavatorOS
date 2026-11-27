@@ -1,11 +1,6 @@
 markdown
 # WONKAVATOR OS v0.6 [FULLSCAN]
 ### *"She Sails The Digital Seas And Boards Every Port"*
-javascript
-\ \      / /   (_)    | |   ___  _ __ ___   ___ 
- \ \ /\ / /    | |    | |  / _ \| '_ ` _ \ / _ \
-  \ V  V /  _  | |    | | | (_) | | | | | |  __/
-   \_/\_/  (_) |_|    |_|  \___/|_| |_| |_|\___|
 
        STAGE0 BOOTLOADER - GODLY EDITION v0.6
 javascript
