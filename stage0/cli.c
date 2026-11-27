@@ -3,11 +3,78 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <dirent.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <fcntl.h>
+#include <errno.h>
 
 int g_watching = 0; 
 int g_parasite = 0;
 pthread_t watch_tid; 
 pthread_t parasite_tid;
+
+#define SCAN_TIMEOUT_MS 200
+
+// Banner grab helper
+void grab_banner(int sock, char* buf, size_t len) {
+    fd_set fds; struct timeval tv;
+    FD_ZERO(&fds); FD_SET(sock, &fds); 
+    tv.tv_sec = 1; tv.tv_usec = 0;
+    if (select(sock+1, &fds, NULL, NULL, &tv) > 0) {
+        recv(sock, buf, len-1, MSG_DONTWAIT);
+    }
+    buf[len-1] = 0;
+}
+
+// Full port scan 1-65535
+void print_open_ports(const char* ip) {
+    log_print("[PORTSCAN] === VERBOSE SCAN %s 1-65535 ===\n", ip);
+    int open_count = 0;
+    
+    for (int port = 1; port <= 65535; port++) {
+        int sock = socket(AF_INET, SOCK_STREAM, 0);
+        if (sock < 0) continue;
+        
+        int flags = fcntl(sock, F_GETFL, 0);
+        fcntl(sock, F_SETFL, flags | O_NONBLOCK);
+        
+        struct sockaddr_in addr;
+        addr.sin_family = AF_INET;
+        addr.sin_port = htons(port);
+        inet_pton(AF_INET, ip, &addr.sin_addr);
+        
+        connect(sock, (struct sockaddr*)&addr, sizeof(addr));
+        
+        fd_set wfds; struct timeval tv;
+        FD_ZERO(&wfds); FD_SET(sock, &wfds);
+        tv.tv_sec = 0; tv.tv_usec = SCAN_TIMEOUT_MS * 1000;
+        
+        if (select(sock+1, NULL, &wfds, NULL, &tv) > 0) {
+            int err = 0; socklen_t len = sizeof(err);
+            getsockopt(sock, SOL_SOCKET, SO_ERROR, &err, &len);
+            if (err == 0) {
+                open_count++;
+                char banner[256] = {0};
+                grab_banner(sock, banner, sizeof(banner));
+                
+                const char* service = "unknown";
+                if (port == 22) service = "ssh";
+                else if (port == 80) service = "http";
+                else if (port == 443) service = "https";
+                else if (port == 445) service = "smb";
+                else if (port == 3389) service = "rdp";
+                else if (port == 5900) service = "vnc";
+                else if (port == 6379) service = "redis";
+                else if (port == 5432) service = "postgres";
+                
+                log_print("[PORT] %5d/tcp OPEN  %-10s | Banner: %.40s\n", port, service, banner);
+            }
+        }
+        close(sock);
+    }
+    log_print("[PORTSCAN] === END: %d ports open ===\n", open_count);
+}
 
 void cli_loop(void) {
     char line[256];
@@ -35,7 +102,7 @@ void cli_loop(void) {
             log_print("  ntick - Distributed tick across network\n");
             log_print("  qmp - Send QMP to fastest node\n");
             log_print("  scanip - Adaptive IP discovery\n");
-            log_print("  scanport IP - Verbose port scan\n");
+            log_print("  scanport IP - Verbose port scan 1-65535\n");
             log_print("  exit - Shutdown\n");
         } 
         else if (strcmp(line, "scan") == 0) { quick_scan(); }
