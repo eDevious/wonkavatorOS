@@ -3,11 +3,18 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <unistd.h>
 #include <stdio.h>
+
+// Helper: ping a host with 1 packet
+int is_host_up(const char* ip) {
+    char cmd[128];
+    snprintf(cmd, sizeof(cmd), "ping -c 1 -W 1 %s > /dev/null 2>&1", ip);
+    return system(cmd) == 0;
+}
 
 void adaptive_net_discovery(void) {
     log_print("[SCANIP] === ADAPTIVE IP DISCOVERY ===\n");
-    char cmd[128]; 
     FILE* fp;
     
     fp = popen("ip -o -f inet addr show | awk '{print $4}' | head -1", "r");
