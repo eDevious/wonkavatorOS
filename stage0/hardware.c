@@ -1,14 +1,16 @@
+#define _GNU_SOURCE
 #include "boot.h"
 #include <sys/utsname.h>
 #include <sys/sysinfo.h>
 #include <time.h>
 #include <stdarg.h>
 #include <ifaddrs.h>
-#include <net/if.h>        
 #include <sys/socket.h>
-#include <sys/ioctl.h>     
-#include <linux/sockios.h> // <- ADD THIS FOR SIOCGIFHWADDR
+#include <netinet/in.h>
+#include <net/if.h>        // struct ifreq + IF_NAMESIZE
+#include <sys/ioctl.h>     // ioctl + SIOCGIFHWADDR
 #include <unistd.h>
+#include <string.h>        // for strncpy
 
 #define SNAPSHOT_FILE "last_manifest.snap"
 static FILE* g_logfile = NULL;
