@@ -1,0 +1,25 @@
+wonkavator-os/
+├── README.md           
+├── Makefile            
+├── link.ld             
+├── ai_placer.dat       
+├── wonk.lock           
+│
+├── stage0/             
+│   ├── boot.h          
+│   ├── boot.c          
+│   ├── cli.c           
+│   ├── orchestrator.c  
+│   ├── ai_placer.c     
+│   ├── ai_placer.h     
+│   ├── wonk_sync.c     
+│   └── dma_driver.c    
+│
+├── kernels/            
+│   ├── monolithic.c    
+│   ├── hybrid.c        
+│   └── unikernel.c     
+│
+└── sim/                
+    ├── qemu_wrapper.py     
+    └── cluster_launcher.py 
