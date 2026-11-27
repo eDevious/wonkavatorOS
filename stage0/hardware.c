@@ -1,8 +1,18 @@
 #define _GNU_SOURCE
 #include "boot.h"
-#include <sys/utsname.h> #include <sys/sysinfo.h> #include <stdarg.h> #include <ifaddrs.h>
-#include <sys/socket.h> #include <netinet/in.h> #include <net/if.h> #include <sys/ioctl.h>
-#include <unistd.h> #include <string.h> #include <stdio.h> #include <stdlib.h> #include <dirent.h>
+#include <sys/utsname.h>
+#include <sys/sysinfo.h>
+#include <sys/socket.h>
+#include <sys/ioctl.h>
+#include <stdarg.h>
+#include <ifaddrs.h>
+#include <netinet/in.h>
+#include <net/if.h>
+#include <unistd.h>
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <dirent.h>
 
 static char last_snapshot[128] = {0};
 ChipInfo g_chip = {0};
@@ -11,7 +21,30 @@ void log_print(const char *fmt, ...) { va_list args; va_start(args, fmt); vprint
 void print_host_info(void) { struct utsname u; uname(&u); log_print("[HOST] %s %s %s | %s\n", u.sysname, u.release, u.machine, u.nodename); }
 void print_cpu_info(void) { FILE *fp = fopen("/proc/cpuinfo", "r"); if (!fp) return; char buf[256]; while (fgets(buf, sizeof(buf), fp)) if (strncmp(buf, "model name", 10) == 0) { log_print("[CPU] %s", buf); break; } fclose(fp); }
 void print_mem_info(void) { struct sysinfo si; sysinfo(&si); log_print("[MEM] Total: %lu MB | Free: %lu MB\n", si.totalram / 1024 / 1024, si.freeram / 1024 / 1024); }
-void print_local_hardware_verbose(void) { struct ifaddrs *ifaddr, *ifa; if (getifaddrs(&ifaddr) == -1) return; for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) { if (ifa->ifa_addr && ifa->ifa_addr->sa_family == AF_INET) { char ip[INET_ADDRSTRLEN]; inet_ntop(AF_INET, &((struct sockaddr_in*)ifa->ifa_addr)->sin_addr, ip, INET_ADDRSTRLEN); int fd = socket(AF_INET, SOCK_DGRAM, 0); struct ifreq ifr; memset(&ifr, 0, sizeof(ifr)); strncpy(ifr.ifr_name, ifa->ifa_name, IF_NAMESIZE - 1); char mac_str[18] = "N/A"; if (ioctl(fd, SIOCGIFHWADDR, &ifr) == 0) { unsigned char *mac = (unsigned char*)ifr.ifr_hwaddr.sa_data; snprintf(mac_str, 18, "%02x:%02x:%02x:%02x:%02x:%02x", mac[0],mac[1],mac[2],mac[3],mac[4],mac[5]); } log_print("[NET] %s | IP: %s | MAC: %s\n", ifa->ifa_name, ip, mac_str); close(fd); } } freeifaddrs(ifaddr); }
+
+void print_local_hardware_verbose(void) { 
+    struct ifaddrs *ifaddr, *ifa; 
+    if (getifaddrs(&ifaddr) == -1) return; 
+    for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) { 
+        if (ifa->ifa_addr && ifa->ifa_addr->sa_family == AF_INET) { 
+            char ip[INET_ADDRSTRLEN]; 
+            inet_ntop(AF_INET, &((struct sockaddr_in*)ifa->ifa_addr)->sin_addr, ip, INET_ADDRSTRLEN); 
+            int fd = socket(AF_INET, SOCK_DGRAM, 0); 
+            struct ifreq ifr; 
+            memset(&ifr, 0, sizeof(ifr)); 
+            strncpy(ifr.ifr_name, ifa->ifa_name, IF_NAMESIZE - 1); 
+            char mac_str[18] = "N/A"; 
+            if (ioctl(fd, SIOCGIFHWADDR, &ifr) == 0) { 
+                unsigned char *mac = (unsigned char*)ifr.ifr_hwaddr.sa_data; 
+                snprintf(mac_str, 18, "%02x:%02x:%02x:%02x:%02x:%02x", mac[0],mac[1],mac[2],mac[3],mac[4],mac[5]); 
+            } 
+            log_print("[NET] %s | IP: %s | MAC: %s\n", ifa->ifa_name, ip, mac_str); 
+            close(fd); 
+        } 
+    } 
+    freeifaddrs(ifaddr); 
+}
+
 void scan_pci_devices(void) { FILE *fp = popen("lspci -nn 2>/dev/null", "r"); if (fp) { char buf[512]; while (fgets(buf, sizeof(buf), fp)) log_print("[PCI] %s", buf); pclose(fp); } }
 void scan_usb_devices(void) { FILE *fp = popen("lsusb 2>/dev/null", "r"); if (fp) { char buf[512]; while (fgets(buf, sizeof(buf), fp)) log_print("[USB] %s", buf); pclose(fp); } }
 void print_dmi_info(void) { FILE *fp = popen("dmidecode -s system-product-name 2>/dev/null", "r"); if (fp) { char buf[256]; if (fgets(buf, sizeof(buf), fp)) log_print("[DMI] %s", buf); pclose(fp); } }
