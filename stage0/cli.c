@@ -10,6 +10,7 @@
 #include <errno.h>
 #include <sys/select.h>
 #include <sys/time.h>
+#include <stdio.h>
 
 int g_watching = 0; 
 int g_parasite = 0;
@@ -73,7 +74,7 @@ void print_open_ports(const char* ip) {
         }
         close(sock);
     }
-    log_print("[PORTSCAN] === END: %d ports open ===\n", open_count);
+    log_print("[PORTSCAN] === END %s: %d ports open ===\n", ip, open_count);
 }
 
 void cli_loop(void) {
@@ -88,7 +89,7 @@ void cli_loop(void) {
         line[strcspn(line, "\n")] = 0;
 
         if (strcmp(line, "help") == 0) {
-            log_print("v0.1-v0.9 Commands:\n");
+            log_print("v0.1-v0.9.2 Commands:\n");
             log_print("  scan/manifest/info/hosts/load/diff/export - Core scans\n");
             log_print("  probe - Deep /proc /sys probe\n");
             log_print("  parasite/stop - Process monitor on/off\n");
@@ -102,7 +103,7 @@ void cli_loop(void) {
             log_print("  ntick - Distributed tick across network\n");
             log_print("  qmp - Send QMP to fastest node\n");
             log_print("  scanip - Adaptive IP discovery\n");
-            log_print("  scanport IP - Verbose port scan 1-65535\n");
+            log_print("  scanport [IP] - Port scan 1-65535. No IP = scan all hosts\n");
             log_print("  exit - Shutdown\n");
         } 
         else if (strcmp(line, "scan") == 0) { quick_scan(); }
@@ -128,7 +129,40 @@ void cli_loop(void) {
         else if (strcmp(line, "ntick") == 0) { network_tick(); }
         else if (strcmp(line, "qmp") == 0) { qmp_send(pick_best_node("cpu"), "{'execute':'query-status'}"); }
         else if (strcmp(line, "scanip") == 0) { adaptive_net_discovery(); }
-        else if (strncmp(line, "scanport ", 9) == 0) { print_open_ports(line + 9); }
+        else if (strncmp(line, "scanport", 8) == 0) { 
+            char* ip = line + 9;
+            
+            if (strlen(ip) == 0) { // CARPET BOMB MODE
+                log_print("[PORTSCAN] === CARPET BOMB MODE: Scanning all live hosts ===\n");
+                
+                FILE* fp = popen("ip -o -f inet addr show | awk '{print $4}' | head -1", "r");
+                char subnet[32] = "192.168.1";
+                if (fp) { 
+                    char myip[32]; 
+                    fgets(myip, 32, fp); 
+                    pclose(fp); 
+                    char* dot = strrchr(myip, '.'); 
+                    if (dot) *dot = 0; 
+                    strncpy(subnet, myip, 31); 
+                    subnet[31] = 0;
+                }
+                
+                for (int i = 1; i < 255; i++) {
+                    char target[32];
+                    snprintf(target, sizeof(target), "%s.%d", subnet, i);
+                    
+                    char cmd[128];
+                    snprintf(cmd, sizeof(cmd), "ping -c 1 -W 1 %s > /dev/null 2>&1", target);
+                    if (system(cmd) == 0) {
+                        log_print("\n[PORTSCAN] >>> TARGET ACQUIRED: %s <<<\n", target);
+                        print_open_ports(target);
+                    }
+                }
+                log_print("[PORTSCAN] === CARPET BOMB COMPLETE ===\n");
+            } else {
+                print_open_ports(ip); // Single target
+            }
+        }
         else if (strcmp(line, "info") == 0) { print_host_info(); print_cpu_info(); print_mem_info(); }
         else if (strcmp(line, "hosts") == 0) { list_snapshots(); }
         else if (strncmp(line, "load ", 5) == 0) { load_snapshot(line + 5); }
