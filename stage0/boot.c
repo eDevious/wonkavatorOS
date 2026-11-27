@@ -20,7 +20,7 @@ int main(void) {
     g_workers[0].online = 1; 
     g_workers[0].cpu_mhz = 2400;
     snprintf(g_node_health[0].node_id, 8, "N-00");
-    strcpy(g_node_health[0].ip, "192.168.1.100"); // CHANGE DEFAULT TARGET HERE
+    strcpy(g_node_health[0].ip, "192.168.170.183"); // CHANGE DEFAULT TARGET HERE
     
     printf("Target: %s. Usage: parasite 192.168.1.50\n\n", g_node_health[0].ip);
     cli_loop();
