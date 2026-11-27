@@ -14,7 +14,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-static void log_print(const char *fmt, ...) {
+void log_print(const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
     vprintf(fmt, args);
