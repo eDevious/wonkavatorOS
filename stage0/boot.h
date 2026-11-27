@@ -28,7 +28,6 @@ void log_print(const char* fmt, ...);
 #define QEMU_BIN "qemu-system-x86_64"
 #define MEM_FILE ".orch_memory"
 
-/* ================= CHIP ================= */
 typedef struct {
     char vendor[64]; 
     char model[128]; 
@@ -39,7 +38,6 @@ typedef struct {
     char gpu_model[128];
 } ChipInfo;
 
-/* ================= NODE ================= */
 typedef struct {
     int id; 
     pid_t pid; 
@@ -50,7 +48,6 @@ typedef struct {
     int jobs_done;
 } Node;
 
-/* ================= REMOTE BULL ================= */
 typedef struct {
     char ip[64]; 
     int port; 
@@ -58,13 +55,11 @@ typedef struct {
     double latency;
 } RemoteBull;
 
-/* ================= EXTERNS ================= */
 extern ChipInfo g_chip;
 extern Node g_nodes[MAX_NODES];
 extern RemoteBull g_remote_bulls[MAX_REMOTE_BULLS];
 extern int g_remote_count;
 
-/* ================= CORE v0.1-v0.6 ================= */
 void print_host_info(void); 
 void print_cpu_info(void); 
 void print_mem_info(void);
@@ -80,16 +75,13 @@ void export_manifest(void);
 void quick_scan(void); 
 void full_manifest(void);
 
-/* ================= HUNTER v0.7 ================= */
 void probe_system(void); 
 void parasite_monitor(void); 
 void tracer_log(const char* func, double ms);
 
-/* ================= CAPTAIN v0.8 ================= */
 void chip_detect(void); 
 void adaptive_boot(void);
 
-/* ================= ADMIRAL v0.9 ================= */
 void orchestrator_init(void); 
 void orchestrator_tick(void); 
 void orchestrator_status(void);
@@ -102,12 +94,10 @@ void orchestrator_assign_job(const char* job_type);
 void save_memory(void); 
 void load_memory(void);
 
-/* ================= ADMIRALTY v0.9.2 ================= */
 void ip_port_scan(void);
 void adaptive_net_discovery(void);
 void print_open_ports(const char* ip);
 
-/* ================= CLI ================= */
 extern int g_watching; 
 extern int g_parasite; 
 extern pthread_t watch_tid; 
@@ -116,4 +106,4 @@ void* watch_thread(void* arg);
 void* parasite_thread(void* arg); 
 void cli_loop(void);
 
-#endif /* BOOT_H */
+#endif
