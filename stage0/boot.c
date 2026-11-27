@@ -7,28 +7,29 @@ int g_placement_count = 0;
 node_health_t g_node_health[MAX_WORKERS];
 
 int main(void) {
-    printf("Wonkavator OS Stage0 v0.6.1-realping\n");
+    printf("Wonkavator OS Stage0 v0.6\n");
     
-    // ZERO EVERYTHING FIRST so no garbage
     memset(g_workers, 0, sizeof(g_workers));
     memset(g_placement_table, 0, sizeof(g_placement_table));
     memset(g_node_health, 0, sizeof(g_node_health));
     
-    ai_placer_load(); // safe now because structs are zeroed
+    ai_placer_load();
     dma_init();
     
+    // EDIT THESE TO YOUR REAL LAN IPs
     const char* ip_list[11] = {
-        "192.168.170.183",
+        "192.168.1.100","192.168.1.101","192.168.1.102","192.168.1.103","192.168.1.104",
+        "192.168.1.105","192.168.1.106","192.168.1.107","192.168.1.108","192.168.1.109","192.168.1.110"
     };
 
     for(int i=0; i<11; i++) { 
-        snprintf(g_workers[i].id, sizeof(g_workers[i].id), "N-%02d", i); 
+        snprintf(g_workers[i].id, 8, "N-%02d", i); 
         g_workers[i].online = 1; 
         g_workers[i].cpu_mhz = 2400;
         
-        snprintf(g_node_health[i].node_id, sizeof(g_node_health[i].node_id), "N-%02d", i);
-        strncpy(g_node_health[i].ip, ip_list[i], sizeof(g_node_health[i].ip)-1); // safe copy
-        g_node_health[i].ip[sizeof(g_node_health[i].ip)-1] = '\0';
+        snprintf(g_node_health[i].node_id, 8, "N-%02d", i);
+        strncpy(g_node_health[i].ip, ip_list[i], 15);
+        g_node_health[i].ip[15] = '\0';
         g_node_health[i].parasite_score = 0;
         g_node_health[i].last_latency_ms = 0;
         g_node_health[i].last_ping_ms = 0;
