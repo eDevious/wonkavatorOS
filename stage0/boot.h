@@ -1,25 +1,23 @@
-#pragma once
-#include <stdint.h>
+#ifndef BOOT_H
+#define BOOT_H
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
+#include <pthread.h>
+#include <arpa/inet.h>
 
-#define MAX_WORKERS 16
-#define PLACEMENT_TABLE_SIZE 64
-
-typedef struct { char node_id[8]; char isa[8]; char kernel[16]; uint32_t avg_time_ms; int runs; } placement_entry_t;
-typedef struct { char id[8]; int online; uint32_t cpu_mhz; } worker_t;
-
-void cli_loop(void);
-void orchestrator_run(int workers, int seconds);
+void dma_init(void);
 void ai_placer_load(void);
 void ai_placer_save(void);
-int ai_placer_get_best_node(const char* isa, const char* kernel);
-void ai_placer_update(const char* node, const char* isa, const char* kernel, uint32_t time_ms);
-void dma_init(void);
-void dma_memcpy(int ch, void* dst, void* src, size_t len);
-void gpio_sync_pulse(void);
+void orchestrator_run(int cores, int gpu);
+void cli_loop(void);
 
-extern worker_t g_workers[MAX_WORKERS];
-extern placement_entry_t g_placement_table[PLACEMENT_TABLE_SIZE];
-extern int g_placement_count;
+void full_manifest(void);
+void diff_snapshot(void);
+void scan_host_system(void);
+void scan_universal_controllers(void);
+void scan_all_mcus(void);
+void print_local_hardware_verbose(void);
+void log_print(const char* fmt, ...);
+void save_snapshot(void);
+#endif
