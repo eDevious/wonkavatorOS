@@ -9,7 +9,7 @@
 
 void log_print(const char* fmt, ...);
 
-// Core Scans
+// Core Scans v0.1-v0.6
 void print_host_info(void);
 void print_cpu_info(void);
 void print_mem_info(void);
@@ -17,8 +17,6 @@ void print_local_hardware_verbose(void);
 void scan_pci_devices(void);
 void scan_usb_devices(void);
 void print_dmi_info(void);
-
-// v0.1 - v0.6 Features
 void create_snapshot(void);
 void diff_snapshot(void);
 void list_snapshots(void);
@@ -27,10 +25,15 @@ void export_manifest(void);
 void quick_scan(void);
 void full_manifest(void);
 
-// v0.7 New Features
+// v0.7 Tools
 void probe_system(void);
 void parasite_monitor(void);
 void tracer_log(const char* func, double ms);
+
+// v0.8 Bull-Tick Orchestrator
+void orchestrator_init(void);
+void orchestrator_tick(void);
+void orchestrator_status(void);
 
 // CLI
 extern int g_watching;
