@@ -117,7 +117,8 @@ void print_local_hardware_verbose(void) {
             char ip[INET_ADDRSTRLEN];
             inet_ntop(AF_INET, &((struct sockaddr_in*)ifa->ifa_addr)->sin_addr, ip, INET_ADDRSTRLEN);
             int fd = socket(AF_INET, SOCK_DGRAM, 0); struct ifreq ifr;
-            strncpy(ifr.ifr_name, ifa->ifa_name, IFNAMSIZ-1); ioctl(fd, SIOCGIFHWADDR, &ifr);
+            strncpy(ifr.ifr_name, ifa->ifa_name, IF_NAMESIZE-1);
+            ifr.ifr_name[IF_NAMESIZE-1] = '\0'; ioctl(fd, SIOCGIFHWADDR, &ifr);
             unsigned char *mac = (unsigned char*)ifr.ifr_hwaddr.sa_data;
             log_print("[IF] %s | IP: %s | MAC: %02x:%02x:%02x:%02x:%02x:%02x\n", 
                 ifa->ifa_name, ip, mac[0],mac[1],mac[2],mac[3],mac[4],mac[5]);
