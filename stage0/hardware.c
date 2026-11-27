@@ -4,9 +4,10 @@
 #include <time.h>
 #include <stdarg.h>
 #include <ifaddrs.h>
-#include <net/if.h>        // for struct ifreq + IFNAMSIZ
-#include <sys/ioctl.h>     // for ioctl + SIOCGIFHWADDR
+#include <net/if.h>        
 #include <sys/socket.h>
+#include <sys/ioctl.h>     
+#include <linux/sockios.h> // <- ADD THIS FOR SIOCGIFHWADDR
 #include <unistd.h>
 
 #define SNAPSHOT_FILE "last_manifest.snap"
