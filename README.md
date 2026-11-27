@@ -3,7 +3,7 @@ markdown
 ### *"She Sails The Digital Seas And Boards Every Port"*
 
        STAGE0 BOOTLOADER - GODLY EDITION v0.6
-javascript
+
 
 ---
 
