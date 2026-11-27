@@ -46,38 +46,12 @@ void create_snapshot(void) {
     log_print("[SNAPSHOT] Saved: %s\n", last_snapshot);
 }
 
-void list_snapshots(void) {
-    log_print("[HOSTS] Saved manifests:\n");
-    DIR *d = opendir("."); if (!d) return; struct dirent *dir;
-    while ((dir = readdir(d)) != NULL) if (strncmp(dir->d_name, "manifest_", 9) == 0) log_print("  %s\n", dir->d_name);
-    closedir(d);
-}
-
-void load_snapshot(const char* fname) {
-    FILE *fp = fopen(fname, "r"); if (!fp) { log_print("[LOAD] File not found: %s\n", fname); return; }
-    log_print("[LOAD] Loading %s:\n", fname); char buf[256]; while(fgets(buf, sizeof(buf), fp)) printf("%s", buf); fclose(fp);
-}
-
+void list_snapshots(void) { log_print("[HOSTS] Saved manifests:\n"); DIR *d = opendir("."); if (!d) return; struct dirent *dir; while ((dir = readdir(d)) != NULL) if (strncmp(dir->d_name, "manifest_", 9) == 0) log_print("  %s\n", dir->d_name); closedir(d); }
+void load_snapshot(const char* fname) { FILE *fp = fopen(fname, "r"); if (!fp) { log_print("[LOAD] File not found: %s\n", fname); return; } log_print("[LOAD] Loading %s:\n", fname); char buf[256]; while(fgets(buf, sizeof(buf), fp)) printf("%s", buf); fclose(fp); }
 void diff_snapshot(void) { if (strlen(last_snapshot) == 0) log_print("[DIFF] No snapshot\n"); else log_print("[DIFF] Last: %s\n", last_snapshot); }
 void export_manifest(void) { char csvname[128]; time_t t = time(NULL); struct tm *tm = localtime(&t); strftime(csvname, sizeof(csvname), "manifest_%Y%m%d_%H%M%S.csv", tm); FILE *fp = fopen(csvname, "w"); if (fp) { fprintf(fp, "Type,Value\n"); fclose(fp); } log_print("[EXPORT] %s\n", csvname); }
-
 void quick_scan(void) { log_print("[SCAN] === QUICK ===\n"); print_cpu_info(); print_mem_info(); print_local_hardware_verbose(); log_print("[SCAN] === END ===\n\n"); }
 void full_manifest(void) { log_print("[MANIFEST] === FULL ===\n"); print_host_info(); quick_scan(); scan_pci_devices(); scan_usb_devices(); print_dmi_info(); create_snapshot(); log_print("[MANIFEST] === END ===\n\n"); }
-
-// v0.7 NEW
-void probe_system(void) {
-    log_print("[PROBE] === DEEP PROBE ===\n");
-    FILE *fp = popen("cat /proc/version 2>/dev/null", "r"); if(fp){char b[256]; fgets(b,256,fp); log_print("[PROBE] Kernel: %s",b); pclose(fp);}
-    fp = popen("cat /proc/loadavg 2>/dev/null", "r"); if(fp){char b[256]; fgets(b,256,fp); log_print("[PROBE] Load: %s",b); pclose(fp);}
-    log_print("[PROBE] === END ===\n\n");
-}
-
-void parasite_monitor(void) {
-    log_print("[PARASITE] Top 3 CPU processes:\n");
-    FILE *fp = popen("ps -eo pid,comm,%cpu --sort=-%cpu | head -4", "r"); if(fp){char b[256]; while(fgets(b,256,fp)) log_print("%s",b); pclose(fp);}
-}
-
-void tracer_log(const char* func, double ms) {
-    struct timespec ts; clock_gettime(CLOCK_MONOTONIC, &ts);
-    log_print("[TRACER] %s | Time: %ld.%09ld | Latency: %.2f ms\n", func, ts.tv_sec, ts.tv_nsec, ms);
-}
+void probe_system(void) { log_print("[PROBE] === DEEP PROBE ===\n"); FILE *fp = popen("cat /proc/version 2>/dev/null", "r"); if(fp){char b[256]; fgets(b,256,fp); log_print("[PROBE] Kernel: %s",b); pclose(fp);} log_print("[PROBE] === END ===\n\n"); }
+void parasite_monitor(void) { log_print("[PARASITE] Top 3 CPU processes:\n"); FILE *fp = popen("ps -eo pid,comm,%cpu --sort=-%cpu | head -4", "r"); if(fp){char b[256]; while(fgets(b,256,fp)) log_print("%s",b); pclose(fp);} }
+void tracer_log(const char* func, double ms) { struct timespec ts; clock_gettime(CLOCK_MONOTONIC, &ts); log_print("[TRACER] %s | Time: %ld.%09ld | Latency: %.2f ms\n", func, ts.tv_sec, ts.tv_nsec, ms); }
