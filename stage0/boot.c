@@ -22,7 +22,7 @@ int main(void) {
     snprintf(g_node_health[0].node_id, 8, "N-00");
     strcpy(g_node_health[0].ip, "192.168.170.183"); // CHANGE DEFAULT TARGET HERE
     
-    printf("Target: %s. Usage: parasite 192.168.1.50\n\n", g_node_health[0].ip);
+    printf("Target: %s. Usage: parasite 192.168.170.183\n\n", g_node_health[0].ip);
     cli_loop();
     
     ai_placer_save();
