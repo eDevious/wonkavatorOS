@@ -8,6 +8,8 @@
 #include <arpa/inet.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <sys/select.h>  // <-- ADDED FOR fd_set, select
+#include <sys/time.h>    // <-- ADDED FOR timeval
 
 int g_watching = 0; 
 int g_parasite = 0;
