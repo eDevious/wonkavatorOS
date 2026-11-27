@@ -1,22 +1,20 @@
+cat > Makefile << 'EOF'
 CC = gcc
-CFLAGS = -std=c17 -Wall -O2 -Istage0 -D_CRT_SECURE_NO_WARNINGS
-TARGET = wonkavator.exe
-SRCS = stage0/boot.c stage0/cli.c stage0/orchestrator.c stage0/dma_driver.c stage0/wonk_sync.c stage0/ai_placer.c
+CFLAGS = -std=c17 -Wall -O2 -Istage0
+TARGET = wonkavator
+SRCS = $(wildcard stage0/*.c)
 OBJS = $(SRCS:.c=.o)
 
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-    $(CC) $(OBJS) -o $(TARGET)
+	$(CC) $(OBJS) -o $(TARGET)
 
 %.o: %.c
-    $(CC) $(CFLAGS) -c $< -o $@
-
-run: $(TARGET)
-    ./$(TARGET)
+	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-    cmd /c "del /Q stage0\*.o $(TARGET) 2>NUL"
-    cmd /c "del /Q wonk.lock ai_placer.dat 2>NUL"
+	rm -f stage0/*.o $(TARGET) wonk.lock ai_placer.dat
 
-.PHONY: all run clean
+.PHONY: all clean
+EOF
