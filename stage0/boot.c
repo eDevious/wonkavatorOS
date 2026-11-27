@@ -7,7 +7,7 @@ int g_placement_count = 0;
 node_health_t g_node_health[MAX_WORKERS];
 
 int main(void) {
-    printf("Wonkavator OS Stage0 v0.6.1-fullscan\n");
+    printf("Wonkavator OS Stage0 v0.6 [FULLSCAN]\n");
     
     memset(g_workers, 0, sizeof(g_workers));
     memset(g_placement_table, 0, sizeof(g_placement_table));
@@ -16,15 +16,13 @@ int main(void) {
     ai_placer_load();
     dma_init();
     
-    // Only setup N-00 as the scan target
     snprintf(g_workers[0].id, 8, "N-00"); 
     g_workers[0].online = 1; 
     g_workers[0].cpu_mhz = 2400;
     snprintf(g_node_health[0].node_id, 8, "N-00");
-    strcpy(g_node_health[0].ip, "192.168.1.100"); // DEFAULT TARGET IP - CHANGE THIS
-    g_node_health[0].parasite_score = 0;
+    strcpy(g_node_health[0].ip, "192.168.1.100"); // CHANGE DEFAULT TARGET HERE
     
-    printf("Target set to %s. Type 'parasite 192.168.1.50' to scan any IP\n\n", g_node_health[0].ip);
+    printf("Target: %s. Usage: parasite 192.168.1.50\n\n", g_node_health[0].ip);
     cli_loop();
     
     ai_placer_save();
