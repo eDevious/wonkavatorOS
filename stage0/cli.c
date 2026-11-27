@@ -14,8 +14,11 @@
 
 int g_watching = 0; 
 int g_parasite = 0;
+int g_scanning = 0; // NEW: kill switch for scanport
+char g_scan_target[32] = {0}; // NEW: target or "ALL"
 pthread_t watch_tid; 
 pthread_t parasite_tid;
+pthread_t scan_tid; // NEW
 
 #define SCAN_TIMEOUT_MS 200
 
@@ -29,11 +32,49 @@ void grab_banner(int sock, char* buf, size_t len) {
     buf[len-1] = 0;
 }
 
+void* portscan_thread(void* arg) { // NEW: threaded scanner
+    char* ip = (char*)arg;
+    
+    if (strcmp(ip, "ALL") == 0) { // CARPET BOMB
+        log_print("[PORTSCAN] === CARPET BOMB MODE: Scanning all live hosts ===\n");
+        
+        FILE* fp = popen("ip -o -f inet addr show | awk '{print $4}' | head -1", "r");
+        char subnet[32] = "192.168.1";
+        if (fp) { 
+            char myip[32]; 
+            fgets(myip, 32, fp); 
+            pclose(fp); 
+            char* dot = strrchr(myip, '.'); 
+            if (dot) *dot = 0; 
+            strncpy(subnet, myip, 31); 
+            subnet[31] = 0;
+        }
+        
+        for (int i = 1; i < 255 && g_scanning; i++) { // CHECK FLAG EACH HOST
+            char target[32];
+            snprintf(target, sizeof(target), "%s.%d", subnet, i);
+            
+            char cmd[128];
+            snprintf(cmd, sizeof(cmd), "ping -c 1 -W 1 %s > /dev/null 2>&1", target);
+            if (system(cmd) == 0) {
+                log_print("\n[PORTSCAN] >>> TARGET ACQUIRED: %s <<<\n", target);
+                print_open_ports(target);
+            }
+        }
+        log_print("[PORTSCAN] === CARPET BOMB COMPLETE ===\n");
+    } else {
+        print_open_ports(ip); // SINGLE TARGET
+    }
+    
+    g_scanning = 0;
+    return NULL;
+}
+
 void print_open_ports(const char* ip) {
     log_print("[PORTSCAN] === VERBOSE SCAN %s 1-65535 ===\n", ip);
     int open_count = 0;
     
-    for (int port = 1; port <= 65535; port++) {
+    for (int port = 1; port <= 65535 && g_scanning; port++) { // CHECK FLAG EACH PORT
         int sock = socket(AF_INET, SOCK_STREAM, 0);
         if (sock < 0) continue;
         
@@ -74,14 +115,15 @@ void print_open_ports(const char* ip) {
         }
         close(sock);
     }
-    log_print("[PORTSCAN] === END %s: %d ports open ===\n", ip, open_count);
+    if (g_scanning) log_print("[PORTSCAN] === END %s: %d ports open ===\n", ip, open_count);
+    else log_print("[PORTSCAN] === ABORTED %s ===\n", ip);
 }
 
 void cli_loop(void) {
     char line[256];
     log_print("[WONKAVATOR] Running initial manifest...\n");
     full_manifest();
-    log_print("[LEVIATHAN] Type 'help' for all v0.1-v0.9 commands\n\n");
+    log_print("[LEVIATHAN] Type 'help' for all v0.1-v0.9.3 commands\n\n");
 
     while (1) {
         printf("[LEVIATHAN] > "); fflush(stdout);
@@ -89,7 +131,7 @@ void cli_loop(void) {
         line[strcspn(line, "\n")] = 0;
 
         if (strcmp(line, "help") == 0) {
-            log_print("v0.1-v0.9.2 Commands:\n");
+            log_print("v0.1-v0.9.3 Commands:\n");
             log_print("  scan/manifest/info/hosts/load/diff/export - Core scans\n");
             log_print("  probe - Deep /proc /sys probe\n");
             log_print("  parasite/stop - Process monitor on/off\n");
@@ -104,6 +146,7 @@ void cli_loop(void) {
             log_print("  qmp - Send QMP to fastest node\n");
             log_print("  scanip - Adaptive IP discovery\n");
             log_print("  scanport [IP] - Port scan 1-65535. No IP = scan all hosts\n");
+            log_print("  stop - Stop watch/parasite/scanport\n");
             log_print("  exit - Shutdown\n");
         } 
         else if (strcmp(line, "scan") == 0) { quick_scan(); }
@@ -130,37 +173,16 @@ void cli_loop(void) {
         else if (strcmp(line, "qmp") == 0) { qmp_send(pick_best_node("cpu"), "{'execute':'query-status'}"); }
         else if (strcmp(line, "scanip") == 0) { adaptive_net_discovery(); }
         else if (strncmp(line, "scanport", 8) == 0) { 
-            char* ip = line + 9;
-            
-            if (strlen(ip) == 0) { // CARPET BOMB MODE
-                log_print("[PORTSCAN] === CARPET BOMB MODE: Scanning all live hosts ===\n");
-                
-                FILE* fp = popen("ip -o -f inet addr show | awk '{print $4}' | head -1", "r");
-                char subnet[32] = "192.168.1";
-                if (fp) { 
-                    char myip[32]; 
-                    fgets(myip, 32, fp); 
-                    pclose(fp); 
-                    char* dot = strrchr(myip, '.'); 
-                    if (dot) *dot = 0; 
-                    strncpy(subnet, myip, 31); 
-                    subnet[31] = 0;
-                }
-                
-                for (int i = 1; i < 255; i++) {
-                    char target[32];
-                    snprintf(target, sizeof(target), "%s.%d", subnet, i);
-                    
-                    char cmd[128];
-                    snprintf(cmd, sizeof(cmd), "ping -c 1 -W 1 %s > /dev/null 2>&1", target);
-                    if (system(cmd) == 0) {
-                        log_print("\n[PORTSCAN] >>> TARGET ACQUIRED: %s <<<\n", target);
-                        print_open_ports(target);
-                    }
-                }
-                log_print("[PORTSCAN] === CARPET BOMB COMPLETE ===\n");
+            if (g_scanning) {
+                log_print("[PORTSCAN] Already running. Use 'stop' to abort.\n");
             } else {
-                print_open_ports(ip); // Single target
+                g_scanning = 1;
+                char* ip = line + 9;
+                if (strlen(ip) == 0) strncpy(g_scan_target, "ALL", 31);
+                else strncpy(g_scan_target, ip, 31);
+                g_scan_target[31] = 0;
+                pthread_create(&scan_tid, NULL, portscan_thread, g_scan_target);
+                log_print("[PORTSCAN] Started. Type 'stop' to abort.\n");
             }
         }
         else if (strcmp(line, "info") == 0) { print_host_info(); print_cpu_info(); print_mem_info(); }
@@ -176,6 +198,11 @@ void cli_loop(void) {
             } 
         }
         else if (strcmp(line, "stop") == 0) { 
+            if (g_scanning) {
+                g_scanning = 0;
+                pthread_join(scan_tid, NULL);
+                log_print("[PORTSCAN] Stopped\n");
+            }
             if (g_watching) { 
                 g_watching = 0; 
                 pthread_join(watch_tid, NULL); 
@@ -188,6 +215,7 @@ void cli_loop(void) {
             } 
         }
         else if (strcmp(line, "exit") == 0) { 
+            g_scanning = 0; if (g_scanning) pthread_join(scan_tid, NULL);
             if (g_watching) { 
                 g_watching = 0; 
                 pthread_join(watch_tid, NULL); 
