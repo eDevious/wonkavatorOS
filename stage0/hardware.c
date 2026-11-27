@@ -131,9 +131,9 @@ void print_local_hardware_verbose(void) {
             
             char mac_str[18] = "N/A";
             if (ioctl(fd, SIOCGIFHWADDR, &ifr) == 0) {
-                // WSL2 fix: Only print MAC if it's actually an ethernet device
-                if (ifr.ifr_hwaddr.sa_family == ARPHRD_ETHER) {
-                    unsigned char *mac = (unsigned char*)ifr.ifr_hwaddr.sa_data;
+                // WSL2 fix: Skip if MAC is all zeros. That's WSL's fake interfaces
+                unsigned char *mac = (unsigned char*)ifr.ifr_hwaddr.sa_data;
+                if (mac[0] || mac[1] || mac[2] || mac[3] || mac[4] || mac[5]) {
                     snprintf(mac_str, sizeof(mac_str), "%02x:%02x:%02x:%02x:%02x:%02x", 
                         mac[0],mac[1],mac[2],mac[3],mac[4],mac[5]);
                 }
