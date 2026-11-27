@@ -17,7 +17,7 @@ int main(void) {
     dma_init();
     
     // EDIT THESE TO YOUR REAL LAN IPs
-    const char* ip_list[11] = {
+    const char* ip_list[1] = {
         "192.168.170.183",
     };
 
