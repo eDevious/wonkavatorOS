@@ -58,18 +58,14 @@ void print_local_hardware_verbose(void) {
     if (getifaddrs(&ifaddr) == -1) { perror("getifaddrs"); return; }
     for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) {
         if (ifa->ifa_addr == NULL) continue;
-        
         if (ifa->ifa_addr->sa_family == AF_INET) {
             char ip[INET_ADDRSTRLEN];
             inet_ntop(AF_INET, &((struct sockaddr_in*)ifa->ifa_addr)->sin_addr, ip, INET_ADDRSTRLEN);
-            
             int fd = socket(AF_INET, SOCK_DGRAM, 0);
             if (fd < 0) continue;
-            
             struct ifreq ifr;
             memset(&ifr, 0, sizeof(ifr));
             strncpy(ifr.ifr_name, ifa->ifa_name, IF_NAMESIZE - 1);
-            
             char mac_str[18] = "N/A";
             if (ioctl(fd, SIOCGIFHWADDR, &ifr) == 0) {
                 unsigned char *mac = (unsigned char*)ifr.ifr_hwaddr.sa_data;
@@ -124,20 +120,7 @@ void create_snapshot(void) {
     strftime(fname, sizeof(fname), "manifest_%Y%m%d_%H%M%S.txt", tm);
     FILE *fp = fopen(fname, "w");
     if (!fp) { perror("fopen"); return; }
-    
     fprintf(fp, "[MANIFEST] %s", ctime(&t));
-    
-    struct ifaddrs *ifaddr, *ifa;
-    if (getifaddrs(&ifaddr) != -1) {
-        for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) {
-            if (ifa->ifa_addr && ifa->ifa_addr->sa_family == AF_INET) {
-                char ip[INET_ADDRSTRLEN];
-                inet_ntop(AF_INET, &((struct sockaddr_in*)ifa->ifa_addr)->sin_addr, ip, INET_ADDRSTRLEN);
-                fprintf(fp, "[IF] %s | %s\n", ifa->ifa_name, ip);
-            }
-        }
-        freeifaddrs(ifaddr);
-    }
     fclose(fp);
     log_print("[LEVIATHAN] SNAPSHOT SAVED: %s\n", fname);
 }
