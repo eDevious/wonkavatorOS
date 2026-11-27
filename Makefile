@@ -1,1 +1,13 @@
-printf 'CC = gcc\nCFLAGS = -std=c17 -Wall -O2 -Istage0\nTARGET = wonkavator\nSRCS = $(wildcard stage0/*.c)\n\nall: $(TARGET)\n\n$(TARGET): $(SRCS)\n\t$(CC) $(CFLAGS) $(SRCS) -o $(TARGET)\n\nclean:\n\trm -f wonkavator wonk.lock ai_placer.dat\n\n.PHONY: all clean\n' > Makefile
+cat > Makefile << 'EOF'
+CC=gcc
+CFLAGS=-std=c17 -Wall -O2 -Istage0
+SRC=$(wildcard stage0/*.c)
+
+all:
+	$(CC) $(CFLAGS) $(SRC) -o wonkavator
+
+clean:
+	rm -f wonkavator wonk.lock ai_placer.dat
+
+.PHONY: all clean
+EOF
