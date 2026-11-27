@@ -1,23 +1,22 @@
 #ifndef BOOT_H
 #define BOOT_H
+
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <pthread.h>
+#include <stdint.h>
 #include <arpa/inet.h>
 
-void dma_init(void);
-void ai_placer_load(void);
-void ai_placer_save(void);
-void orchestrator_run(int cores, int gpu);
+void log_print(const char* fmt, ...);
+void print_host_info(void);
+void print_cpu_info(void);
+void print_mem_info(void);
+void print_local_hardware_verbose(void);
+void scan_pci_devices(void);
+void scan_usb_devices(void);
+void print_dmi_info(void);
+void create_snapshot(void);
+void diff_snapshot(void);
+void full_manifest(void);
+
 void cli_loop(void);
 
-void full_manifest(void);
-void diff_snapshot(void);
-void scan_host_system(void);
-void scan_universal_controllers(void);
-void scan_all_mcus(void);
-void print_local_hardware_verbose(void);
-void log_print(const char* fmt, ...);
-void save_snapshot(void);
 #endif
