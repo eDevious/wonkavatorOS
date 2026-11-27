@@ -24,7 +24,7 @@ void cli_loop(void) {
             log_print("v0.1-v0.9 Commands:\n");
             log_print("  scan/manifest/info/hosts/load/diff/export - Core scans\n");
             log_print("  probe - Deep /proc /sys probe\n");
-            log_print("  parasite/pstop - Process monitor on/off\n");
+            log_print("  parasite/stop - Process monitor on/off\n");
             log_print("  watch/stop - Auto scan on/off\n");
             log_print("  tracer - Function timing\n");
             log_print("  chip - CPU/GPU/NIC detection\n");
@@ -46,13 +46,6 @@ void cli_loop(void) {
                 g_parasite = 1; 
                 pthread_create(&parasite_tid, NULL, parasite_thread, NULL); 
                 log_print("[PARASITE] Started.\n"); 
-            } 
-        }
-        else if (strcmp(line, "pstop") == 0) { 
-            if (g_parasite) { 
-                g_parasite = 0; 
-                pthread_join(parasite_tid, NULL); 
-                log_print("[PARASITE] Manually stopped\n"); 
             } 
         }
         else if (strcmp(line, "tracer") == 0) { tracer_log("manual_trace", 0.0); }
