@@ -129,13 +129,16 @@ void print_local_hardware_verbose(void) {
             memset(&ifr, 0, sizeof(ifr));
             strncpy(ifr.ifr_name, ifa->ifa_name, IF_NAMESIZE - 1);
             
+            char mac_str[18] = "N/A";
             if (ioctl(fd, SIOCGIFHWADDR, &ifr) == 0) {
-                unsigned char *mac = (unsigned char*)ifr.ifr_hwaddr.sa_data;
-                log_print("[IF] %s | IP: %s | MAC: %02x:%02x:%02x:%02x:%02x:%02x\n", 
-                    ifa->ifa_name, ip, mac[0],mac[1],mac[2],mac[3],mac[4],mac[5]);
-            } else {
-                log_print("[IF] %s | IP: %s | MAC: N/A\n", ifa->ifa_name, ip);
+                // WSL2 fix: Only print MAC if it's actually an ethernet device
+                if (ifr.ifr_hwaddr.sa_family == ARPHRD_ETHER) {
+                    unsigned char *mac = (unsigned char*)ifr.ifr_hwaddr.sa_data;
+                    snprintf(mac_str, sizeof(mac_str), "%02x:%02x:%02x:%02x:%02x:%02x", 
+                        mac[0],mac[1],mac[2],mac[3],mac[4],mac[5]);
+                }
             }
+            log_print("[IF] %s | IP: %s | MAC: %s\n", ifa->ifa_name, ip, mac_str);
             close(fd);
         }
     }
