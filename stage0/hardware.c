@@ -4,10 +4,8 @@
 #include <time.h>
 #include <stdarg.h>
 #include <ifaddrs.h>
-#include <net/if.h>
-#include <sys/ioctl.h>
-#include <net/if.h>
-#include <sys/ioctl.h>
+#include <net/if.h>        // for struct ifreq + IFNAMSIZ
+#include <sys/ioctl.h>     // for ioctl + SIOCGIFHWADDR
 #include <sys/socket.h>
 #include <unistd.h>
 
