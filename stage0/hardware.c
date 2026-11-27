@@ -1,5 +1,4 @@
 #define _GNU_SOURCE
-#include <linux/if_arp.h> // for ARPHRD_ETHER
 #include "boot.h"
 #include <sys/utsname.h>
 #include <sys/sysinfo.h>
@@ -8,10 +7,10 @@
 #include <ifaddrs.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <net/if.h>        // struct ifreq + IF_NAMESIZE
-#include <sys/ioctl.h>     // ioctl + SIOCGIFHWADDR
+#include <net/if.h>        // ONLY this one for ifreq
+#include <sys/ioctl.h>     
 #include <unistd.h>
-#include <string.h>        // for strncpy
+#include <string.h>
 
 #define SNAPSHOT_FILE "last_manifest.snap"
 static FILE* g_logfile = NULL;
