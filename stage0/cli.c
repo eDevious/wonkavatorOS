@@ -8,8 +8,8 @@
 #include <arpa/inet.h>
 #include <fcntl.h>
 #include <errno.h>
-#include <sys/select.h>  // <-- ADDED FOR fd_set, select
-#include <sys/time.h>    // <-- ADDED FOR timeval
+#include <sys/select.h>
+#include <sys/time.h>
 
 int g_watching = 0; 
 int g_parasite = 0;
@@ -18,7 +18,6 @@ pthread_t parasite_tid;
 
 #define SCAN_TIMEOUT_MS 200
 
-// Banner grab helper
 void grab_banner(int sock, char* buf, size_t len) {
     fd_set fds; struct timeval tv;
     FD_ZERO(&fds); FD_SET(sock, &fds); 
@@ -29,7 +28,6 @@ void grab_banner(int sock, char* buf, size_t len) {
     buf[len-1] = 0;
 }
 
-// Full port scan 1-65535
 void print_open_ports(const char* ip) {
     log_print("[PORTSCAN] === VERBOSE SCAN %s 1-65535 ===\n", ip);
     int open_count = 0;
