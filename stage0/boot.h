@@ -6,12 +6,10 @@
 
 #define MAX_WORKERS 16
 #define PLACEMENT_TABLE_SIZE 64
-#define SCAN_PORTS 10
 
 typedef struct { char node_id[8]; char isa[8]; char kernel[16]; uint32_t avg_time_ms; int runs; } placement_entry_t;
 typedef struct { char id[8]; int online; uint32_t cpu_mhz; } worker_t;
-
-typedef struct { char node_id[8]; char ip[16]; int parasite_score; uint32_t last_latency_ms; uint32_t last_ping_ms; int blacklisted; int ip_up; int open_ports[SCAN_PORTS]; } node_health_t;
+typedef struct { char node_id[8]; char ip[16]; int parasite_score; uint32_t last_latency_ms; uint32_t last_ping_ms; int blacklisted; int ip_up; int open_port_count; } node_health_t;
 
 void cli_loop(void);
 void orchestrator_run(int workers, int seconds);
@@ -22,8 +20,6 @@ void ai_placer_update(const char* node, const char* isa, const char* kernel, uin
 void dma_init(void);
 void dma_memcpy(int ch, void* dst, void* src, size_t len);
 void gpio_sync_pulse(void);
-
-// UPDATED v0.6.1
 void parasitic_scan(const char* target_ip);
 int is_node_blacklisted(const char* node);
 void parasitic_update(const char* node, uint32_t latency_ms);
