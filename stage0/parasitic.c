@@ -2,38 +2,29 @@
 #include <time.h>
 
 #ifdef _WIN32
-    #include <windows.h>
     #define PING_CMD "ping -n 1 -w 1000 %s > nul"
 #else
-    #include <sys/wait.h>
     #define PING_CMD "ping -c 1 -W 1 %s > /dev/null 2>&1"
 #endif
 
-// REAL PING: returns ms, or 0 if down
 uint32_t real_ping(const char* ip) {
     char cmd[128];
-    sprintf(cmd, PING_CMD, ip);
-    
+    snprintf(cmd, 128, PING_CMD, ip);
     clock_t start = clock();
     int ret = system(cmd);
     clock_t end = clock();
-    
-    if(ret != 0) return 0; // host down
-    
+    if(ret != 0) return 0;
     uint32_t ms = (uint32_t)((end - start) * 1000 / CLOCKS_PER_SEC);
-    if(ms < 1) ms = 1; // minimum 1ms
-    return ms;
+    return ms < 1 ? 1 : ms;
 }
 
 void parasitic_scan(void) {
     printf("[PARASITE] Scanning 11 nodes: CPU + REAL IP PING...\n");
     srand((unsigned)time(NULL));
     for(int i=0; i<11; i++) {
-        // 1. CPU latency sim
         uint32_t latency = 3 + (rand() % 20);
         g_node_health[i].last_latency_ms = latency;
         
-        // 2. REAL IP PING SCAN - v0.6.1
         printf("[PARASITE] Pinging %s... ", g_node_health[i].ip);
         fflush(stdout);
         uint32_t ping = real_ping(g_node_health[i].ip);
@@ -44,19 +35,16 @@ void parasitic_scan(void) {
             g_node_health[i].parasite_score += 2;
             printf("DOWN - score:%d\n", g_node_health[i].parasite_score);
         }
-        else if(ping > 50) { // >50ms = slow on LAN
+        else if(ping > 50) {
             g_node_health[i].parasite_score++;
             printf("%dms SLOW - score:%d\n", ping, g_node_health[i].parasite_score);
         }
-        else {
-            printf("%dms OK\n", ping);
-        }
+        else printf("%dms OK\n", ping);
 
         if(latency > 15) { 
             g_node_health[i].parasite_score++; 
             printf("[PARASITE] %s SLOW CPU: %dms\n", g_workers[i].id, latency);
         }
-
         if(g_node_health[i].parasite_score >= 3) {
             g_node_health[i].blacklisted = 1;
             printf("[PARASITE] %s BLACKLISTED\n", g_workers[i].id);
