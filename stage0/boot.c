@@ -12,7 +12,7 @@ int main(void) {
     
     // IP LIST - EDIT THESE TO YOUR REAL LAN IPs
     const char* ip_list[11] = {
-        "192.168.170.183/20",
+        "192.168.170.183",
  
     };
 
