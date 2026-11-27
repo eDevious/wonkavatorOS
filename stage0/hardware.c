@@ -1,4 +1,5 @@
 #define _GNU_SOURCE
+#include <linux/if_arp.h> // for ARPHRD_ETHER
 #include "boot.h"
 #include <sys/utsname.h>
 #include <sys/sysinfo.h>
