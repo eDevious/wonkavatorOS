@@ -51,56 +51,98 @@ This is v0.9. We sail slow. We sail deliberate. No cowboy jumps.
 
 From your home port:
 ```bash
+
+WONKAVATOR v0.9 - DUDE RANCH BUILD GUIDE
+From bare dirt to seaworthy vessel
+1. PREPARE THE RANCH - DEPENDENCIES
+Make sure your ranch has the right tools in the shed.
+For Debian/Ubuntu:
+bash
+sudo apt update
+sudo apt install build-essential gcc make git dmidecode pciutils usbutils
+For Arch:
+bash
+sudo pacman -S base-devel git dmidecode pciutils usbutils
+For Fedora:
+bash
+sudo dnf groupinstall "Development Tools"
+sudo dnf install git dmidecode pciutils usbutils
+dmidecode, lspci, lsusb are needed for the fingerprint command to work proper.
+2. LAY THE FOUNDATION - GET THE CODE
+bash
+cd ~
+git clone <your-repo-url> wonkavatorOS
+cd wonkavatorOS
+Or if you're building from our 6-file dump:
+bash
+mkdir -p ~/wonkavatorOS/stage0
 cd ~/wonkavatorOS
+Then paste all 6 files: Makefile, main.c, cli.c, boot.h, hardware.c, net_scan.c, hardware_fingerprint.c, orchestrator.c
+3. INSPECT THE LUMBER - FILE TREE CHECK
+Your ranch should look like this:
+javascript
+wonkavatorOS/
+├── Makefile
+└── stage0/
+    ├── boot.h
+    ├── main.c
+    ├── cli.c
+    ├── hardware.c
+    ├── net_scan.c
+    ├── hardware_fingerprint.c
+    └── orchestrator.c
+4. RAISE THE BARN - COMPILE
+Run the build from the ranch root:
+bash
 make clean
 make
-If the sea is calm, you will see 6 objects compile and link into one binary:
+Expected Output:
 javascript
-gcc ... -o wonkavator -lpthread
-To launch:
+gcc -std=c17 -Wall -O2 -Istage0 -pthread -c -o stage0/main.o stage0/main.c
+gcc -std=c17 -Wall -O2 -Istage0 -pthread -c -o stage0/cli.o stage0/cli.c
+...
+gcc stage0/main.o ... -o wonkavator -lpthread
+[BUILD] Wonkavator v0.9 ready
+If you see error: unknown type name ‘va_list’ you forgot #include <stdarg.h> in boot.h. We fixed that in v0.9.
+5. BRAND THE CATTLE - FIRST RUN
+You need sudo for hardware access:
 bash
 sudo ./wonkavator
-Root is required for full hardware and raw socket access.
-THE SHIP'S BELL - AVAILABLE COMMANDS
-Type help once aboard.
-Navigation & Recon
-scan - Quick scan of CPU/Memory
-manifest - Full system manifest. Host, CPU, RAM, Disks, Network
-probe - Deep system probe. Kernel and OS details
-info - Print host, cpu, and memory info
-Cartography
-hosts - List saved snapshots
-load <name> - Load a snapshot
-diff - Diff current state vs last snapshot
-export - Export manifest to manifest.json
-The Crow's Nest - Networking
-scanip - Adaptive network discovery. Finds all hosts on /24
-scanport [IP] - Full TCP 1-65535 scan. No IP = "CARPET BOMB" entire subnet
-stop - ABORT any running scan. The emergency brake
-The Bosun's Fingerprint Kit
-fingerprint - Local DMI, PCI, USB, Serial. Finds Arduinos, ESPs, STM32s
-fp <IP> - Remote firmware banner grab on target IP
-The Engine Room
-watch - Auto-scan every 5 seconds
-parasite - Background monitor thread
-tick - Orchestrator tick
-herd - Show networked nodes
-addbull <IP> <PORT> - Add node to the herd
-ntick - Network tick, pings all herd members
-qmp - Send QMP command to best node
-Ship's Orders
-exit - Secure all hatches and shutdown
-SHIP'S ARTICLES - DESIGN PHILOSOPHY v0.9
-Stoppable: Every long-running operation checks g_scanning. You are always in command.
-Logged: Everything goes to stdout AND wonkavator.log
-Local First: No cloud. No telemetry. This ship sails in your waters only.
-Verbose: We don't do quiet. If something happens, the ship tells you.
-KNOWN SHOALS
-scanport ALL on a /24 will take time. Use stop if needed.
-fingerprint uses dmidecode and lspci. Run as root.
-Network herd is in-memory only for v0.9. Does not persist.
-CAPTAIN'S ORDERS
-We do not chase version numbers.
+You should see:
+javascript
+[WONKAVATOR] v0.9 STOPPABLE SCAN Booting...
+[WONKAVATOR] Running initial manifest...
+[LEVIATHAN] v0.9 Type 'help'
+
+[LEVIATHAN] > 
+6. SHAKEDOWN CRUISE - TEST COMMANDS
+Run these in order to verify the ship:
+bash
+[LEVIATHAN] > help
+[LEVIATHAN] > fingerprint
+[LEVIATHAN] > scanport 127.0.0.1
+[LEVIATHAN] > stop
+[LEVIATHAN] > exit
+Then check the ship's log:
+bash
+cat wonkavator.log
+7. TROUBLESHOOTING THE FENCE LINE
+Problem
+Fix
+make: command not found
+Install build-essential or base-devel
+permission denied on ./wonkavator
+chmod +x wonkavator
+dmidecode: command not found
+sudo apt install dmidecode
+Scan hangs
+Type stop to abort. All scans are interruptible in v0.9
+wonkavator.log is empty
+Check you have write permission in the dir
+8. RANCH RULES FOR v0.9
+One command at a time: Don't run watch and scanport together yet
+Log everything: If something weird happens, check wonkavator.log first
+No version bumps: We stay on v0.9 until the captain says so
 We do not ship half-baked features.
 We build, we test, we log, we sail again.
 v0.9 is the hull. Strong. Watertight. Ready.
