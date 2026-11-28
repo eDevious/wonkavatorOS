@@ -2,7 +2,6 @@
 #include <string.h>
 #include <pthread.h>
 #include <unistd.h>
-#include <dirent.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -89,7 +88,7 @@ void cli_loop(void) {
     char line[256];
     log_print("[WONKAVATOR] Running initial manifest...\n");
     full_manifest();
-    log_print("[LEVIATHAN] v0.9.2 Type 'help'\n\n");
+    log_print("[LEVIATHAN] v0.9.1 Type 'help'\n\n");
 
     while (1) {
         printf("[LEVIATHAN] > "); fflush(stdout);
@@ -98,7 +97,7 @@ void cli_loop(void) {
 
         if (strcmp(line, "help") == 0) {
             log_print("Commands: scan manifest info hosts load diff export\n");
-            log_print("  probe parasite watch stop tracer chip boot\n");
+            log_print("  probe parasite watch stop\n");
             log_print("  tick herd addbull ntick qmp scanip\n");
             log_print("  scanport [IP] - No IP = carpet bomb. Stoppable.\n");
             log_print("  fingerprint - Local HW/MCU/Firmware dump\n");
@@ -111,9 +110,6 @@ void cli_loop(void) {
         else if (strcmp(line, "parasite") == 0) { 
             if (!g_parasite) { g_parasite = 1; pthread_create(&parasite_tid, NULL, parasite_thread, NULL); log_print("[PARASITE] Started.\n"); } 
         }
-        else if (strcmp(line, "tracer") == 0) { tracer_log("manual_trace", 0.0); }
-        else if (strcmp(line, "chip") == 0) { chip_detect(); }
-        else if (strcmp(line, "boot") == 0) { adaptive_boot(); }
         else if (strcmp(line, "tick") == 0) { orchestrator_tick(); }
         else if (strcmp(line, "herd") == 0) { orchestrator_status(); }
         else if (strncmp(line, "addbull ", 8) == 0) { 
