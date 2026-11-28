@@ -1,38 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup><Filter Include="Source Files"><UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier></Filter></ItemGroup>
+  <ItemGroup><Filter Include="Header Files"><UniqueIdentifier>{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}</UniqueIdentifier></Filter></ItemGroup>
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
-    </Filter>
+    <ClCompile Include="stage0\main.c"><Filter>Source Files</Filter></ClCompile><ClCompile Include="stage0\cli.c"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="stage0\hardware.c"><Filter>Source Files</Filter></ClCompile><ClCompile Include="stage0\orchestrator.c"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="stage0\net_scan.c"><Filter>Source Files</Filter></ClCompile><ClCompile Include="stage0\hardware_fingerprint.c"><Filter>Source Files</Filter></ClCompile>
   </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="stage0\main.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="stage0\cli.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="stage0\hardware.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="stage0\orchestrator.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="stage0\net_scan.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="stage0\hardware_fingerprint.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="stage0\boot.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-  </ItemGroup>
+  <ItemGroup><ClInclude Include="stage0\boot.h"><Filter>Header Files</Filter></ClInclude></ItemGroup>
 </Project>
