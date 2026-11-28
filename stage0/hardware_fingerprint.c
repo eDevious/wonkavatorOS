@@ -29,9 +29,6 @@ void fingerprint_hardware(void) {
     
     log_print("[FINGERPRINT] CPU:\n");
     run_cmd("grep 'model name' /proc/cpuinfo | head -1");
-    
-    log_print("[FINGERPRINT] NIC Firmware:\n");
-    run_cmd("ethtool -i eth0 2>/dev/null | grep firmware || ethtool -i enp0s3 2>/dev/null | grep firmware");
 }
 
 void fingerprint_microcontrollers(void) {
@@ -43,6 +40,6 @@ void fingerprint_microcontrollers(void) {
 
 void fingerprint_firmware_remote(const char* ip) {
     log_print("[FINGERPRINT] === REMOTE PROBE: %s ===\n", ip);
-    log_print("[FINGERPRINT] Banner grabbing 22,80,443...\n");
-    print_open_ports(ip); // reuse existing scanner
+    log_print("[FINGERPRINT] Banner grabbing...\n");
+    print_open_ports(ip);
 }
