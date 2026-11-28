@@ -6,6 +6,7 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
+#include <stdarg.h> // FIX FOR va_list
 
 #define LOG_FILE "wonkavator.log"
 
@@ -17,7 +18,7 @@ static inline void log_print(const char* fmt, ...) {
     
     FILE* f = fopen(LOG_FILE, "a");
     if (f) {
-        va_start(args, fmt);
+        va_start(args, fmt); // re-init for file
         vfprintf(f, fmt, args);
         va_end(args);
         fclose(f);
@@ -48,24 +49,21 @@ void qmp_send(const char* node, const char* cmd);
 // net_scan.c
 void adaptive_net_discovery(void);
 int is_host_up(const char* ip);
+void print_open_ports(const char* ip); // exposed for fingerprint
 
 // cli.c
 void cli_loop(void);
 void* watch_thread(void* arg);
 void* parasite_thread(void* arg);
 
-// hardware_fingerprint.c - NEW v0.9.2
+// hardware_fingerprint.c
 void fingerprint_hardware(void);
 void fingerprint_microcontrollers(void);
 void fingerprint_firmware_remote(const char* ip);
 
-// tracer.c - stub
+// stubs
 static inline void tracer_log(const char* name, double ms) { (void)name; (void)ms; }
-
-// chip.c - stub
 static inline void chip_detect(void) { log_print("[CHIP] Detection stub\n"); }
-
-// boot.c - stub  
 static inline void adaptive_boot(void) { log_print("[BOOT] Adaptive boot stub\n"); }
 
 #endif
