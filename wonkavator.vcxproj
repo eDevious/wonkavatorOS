@@ -1,0 +1,23 @@
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="stage0\main.c" />
+    <ClCompile Include="stage0\cli.c" />
+    <ClCompile Include="stage0\hardware.c" />
+    <ClCompile Include="stage0\orchestrator.c" />
+    <ClCompile Include="stage0\net_scan.c" />
+    <ClCompile Include="stage0\hardware_fingerprint.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="stage0\boot.h" />
+  </ItemGroup>
+  <PropertyGroup>
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+    <LanguageStandard>stdc17</LanguageStandard>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <Link>
+      <AdditionalDependencies>ws2_32.lib;iphlpapi.lib</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+</Project>
