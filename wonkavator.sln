@@ -1,7 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
-MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wonkavator", "wonkavator.vcxproj", "{A1B2C3D4-E5F6-4789-ABCD-EF0123456789}"
 EndProject
 Global
@@ -16,43 +15,3 @@ Global
 		{A1B2C3D4-E5F6-4789-ABCD-EF0123456789}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 EndGlobal
-2. wonkavator.vcxproj
-Key bits for v0.9:
-xml
-<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <ItemGroup>
-    <ClCompile Include="stage0\main.c" />
-    <ClCompile Include="stage0\cli.c" />
-    <ClCompile Include="stage0\hardware.c" />
-    <ClCompile Include="stage0\orchestrator.c" />
-    <ClCompile Include="stage0\net_scan.c" />
-    <ClCompile Include="stage0\hardware_fingerprint.c" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="stage0\boot.h" />
-  </ItemGroup>
-  <PropertyGroup>
-    <ConfigurationType>Application</ConfigurationType>
-    <PlatformToolset>v143</PlatformToolset>
-    <LanguageStandard>stdc17</LanguageStandard>
-  </PropertyGroup>
-  <ItemDefinitionGroup>
-    <Link>
-      <AdditionalDependencies>ws2_32.lib;iphlpapi.lib</AdditionalDependencies>
-    </Link>
-  </ItemDefinitionGroup>
-</Project>
-3. WINDOWS CODE CHANGES NEEDED IN v0.9
-Because we use pthreads and Linux commands, we need shims:
-In boot.h add:
-c
-#ifdef _WIN32
-    #include <windows.h>
-    #include <winsock2.h>
-    #pragma comment(lib, "ws2_32.lib")
-    #define popen _popen
-    #define pclose _pclose
-#else
-    #include <pthread.h>
-#endif
-
