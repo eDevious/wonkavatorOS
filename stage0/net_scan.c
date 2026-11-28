@@ -1,12 +1,8 @@
 #include "boot.h"
-#include <string.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <unistd.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-// Helper: ping a host with 1 packet
 int is_host_up(const char* ip) {
     char cmd[128];
     snprintf(cmd, sizeof(cmd), "ping -c 1 -W 1 %s > /dev/null 2>&1", ip);
@@ -14,29 +10,31 @@ int is_host_up(const char* ip) {
 }
 
 void adaptive_net_discovery(void) {
-    log_print("[SCANIP] === ADAPTIVE IP DISCOVERY ===\n");
-    FILE* fp;
+    log_print("[NETSCAN] === ADAPTIVE NETWORK DISCOVERY ===\n");
     
-    fp = popen("ip -o -f inet addr show | awk '{print $4}' | head -1", "r");
+    FILE* fp = popen("ip -o -f inet addr show | awk '{print $4}' | head -1", "r");
     char subnet[32] = "192.168.1";
     if (fp) { 
-        char ip[32]; 
-        fgets(ip, 32, fp); 
+        char myip[32]; 
+        if (fgets(myip, 32, fp)) {
+            myip[strcspn(myip, "/")] = 0;
+            char* dot = strrchr(myip, '.'); 
+            if (dot) *dot = 0; 
+            strncpy(subnet, myip, 31); 
+            subnet[31] = 0;
+        }
         pclose(fp); 
-        char* dot = strrchr(ip, '.'); 
-        if (dot) *dot = 0; 
-        strncpy(subnet, ip, 31); 
-        subnet[31] = 0;
     }
     
-    log_print("[SCANIP] Scanning subnet: %s.1-254\n", subnet);
-    
+    log_print("[NETSCAN] Probing subnet: %s.0/24\n", subnet);
+    int hosts_found = 0;
     for (int i = 1; i < 255; i++) {
-        char target[32];
+        char target[32]; 
         snprintf(target, sizeof(target), "%s.%d", subnet, i);
         if (is_host_up(target)) {
-            log_print("[SCANIP] HOST UP: %s\n", target);
+            hosts_found++;
+            log_print("[NETSCAN] HOST UP: %s\n", target);
         }
     }
-    log_print("[SCANIP] === END ===\n");
+    log_print("[NETSCAN] === DISCOVERY COMPLETE: %d hosts ===\n", hosts_found);
 }
